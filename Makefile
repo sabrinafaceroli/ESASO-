@@ -1,16 +1,14 @@
-all: ks.o kc.o kernel
-
-ks.o:
-	nasm -f elf32 kernel.s -o ks.o
-
-kc.o:
-	gcc -m32 -c kernel.c -o kc.o
-
-kernel:
-	ld -m elf_i386 -T link.ld -o kernel ks.o kc.o
+all:
+	@as --32 boot.s -o boot.o
+	@ld -m elf_i386 -nostdlib -N -Ttext 7C00 boot.o -o boot.elf
+	@objcopy -O binary boot.elf boot.bin
+all2: clean
+	@as --32 boot.s -o boot.o
+	@ld -m elf_i386 -nostdlib -N -Ttext 7C00 boot.o -o boot.elf
+	@objcopy -O binary boot.elf boot.bin
 
 clean:
-	rm *.o kernel
+	@rm *.o *.bin *.elf
 
 run:
-	qemu-system-i386 -kernel kernel
+	@qemu-system-i386 boot.bin -boot a
